@@ -44,10 +44,10 @@ DESC_VIDEO_HIGH4 equ (0x00 << 24) + DESC_G_4K + DESC_D_32 + \
     DESC_P + DESC_DPL_0 + DESC_S_DATA + DESC_TYPE_DATA + 0x0b
 
 ; selector ------------
-PRL0 equ 00b
-PRL1 equ 01b
-PRL2 equ 10b
-PRL3 equ 11b
+RPL0 equ 00b
+RPL1 equ 01b
+RPL2 equ 10b
+RPL3 equ 11b
 
 TI_GDT equ 000b
 TI_LDT equ 100b
