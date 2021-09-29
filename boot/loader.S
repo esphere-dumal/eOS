@@ -4,7 +4,7 @@ LOADER_STACK_TOP equ LOADER_BASE_ADDR
 
 jmp loader_start
 
-;gdt high part and low part, each is 4 byte
+; gdt high part and low part, each is 4 byte
 GDT_BASE: dd 0x00000000
           dd 0x00000000
 
@@ -37,6 +37,7 @@ loader_start:
     mov cx, 17
     mov ax, 0x1301 ; ah = 13, al = 01
     mov bx, 0x001f ; bh = 00 -> page is 0, bl = 1f -> blue backend with pink frontend
+    mov dx, 0x1800 ; dh, dl -> x, y
     int 0x10
 
     ; enter protect mode:
@@ -70,6 +71,5 @@ p_mode_start:
     mov gs, ax
 
     mov byte [gs:160], 'P'
-    mov byte [gs:161], 0x1f
 
     jmp $
