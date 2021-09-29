@@ -71,5 +71,6 @@ p_mode_start:
     mov gs, ax
 
     mov byte [gs:160], 'P'
+    mov byte [gs:161], 0x1F
 
     jmp $
