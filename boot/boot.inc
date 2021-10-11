@@ -51,3 +51,12 @@ RPL3 equ 11b
 
 TI_GDT equ 000b
 TI_LDT equ 100b
+
+; pagetable -----------
+PAGE_DIR_TABLE_POS equ 0x100000
+; pagetable attribute
+PG_P equ 1b
+PG_RW_R equ 00b
+PG_RW_W equ 10b
+PG_US_S equ 000b
+PG_US_U equ 100b
