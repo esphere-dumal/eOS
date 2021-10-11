@@ -38,7 +38,7 @@ loader_start:
     mov edx, 0x534d4150
     mov di,  ards_buf
 
-.e820_mem_get_loop:
+  .e820_mem_get_loop:
     mov eax, 0x0000e820
     mov ecx, 20
     int 0x15
@@ -52,20 +52,20 @@ loader_start:
     mov cx, [ards_nr]
     mov ebx, ards_buf
     xor edx, edx
-; bubble sort to find the highest mem
-.find_max_mem_area:
+  ; bubble sort to find the highest mem
+  .find_max_mem_area:
     mov eax, [ebx]
     add eax, [ebx+8]
     add ebx, 20
     cmp ebx, eax
     jge .next_ards
     mov edx, eax
-.next_ards:
+  .next_ards:
     loop .find_max_mem_area
     jmp  .mem_get_ok
 
 
-.e820_failed_so_try_e801:
+  .e820_failed_so_try_e801:
     mov ax, 0xe801
     int 0x15
     jc  .e801_failed_so_try_88
@@ -88,7 +88,7 @@ loader_start:
     jmp .mem_get_ok
 
 
-.e801_failed_so_try_88:
+  .e801_failed_so_try_88:
     mov ah, 0x88
     int 0x15
     jc .error_hlt
@@ -100,7 +100,7 @@ loader_start:
     or  edx, eax
     add edx, 0x100000
 
-.mem_get_ok:
+  .mem_get_ok:
     mov [total_mem_bytes], edx
 
     ; enter protect mode:
@@ -123,7 +123,7 @@ loader_start:
 
     jmp dword SELECTOR_CODE:p_mode_start    ; refresh pipeline
 
-.error_hlt:
+  .error_hlt:
     hlt
 
 [bits 32]
@@ -135,6 +135,12 @@ p_mode_start:
     mov esp, LOADER_STACK_TOP
     mov ax, SELECTOR_VIDEO
     mov gs, ax
+
+; load kernel into buffer
+    mov eax, KERNEL_START_SECTOR
+    mov ebx, KERNEL_BIN_BASE_ADDR
+    mov ecx, 200
+    call rd_disk_m_32
 
     call setup_page
     sgdt [gdt_ptr]
@@ -151,20 +157,67 @@ p_mode_start:
 
     lgdt [gdt_ptr]
 
-    mov byte [gs:160], "V"
+    jmp SELECTOR_CODE:enter_kernel
 
-    jmp $
+enter_kernel:
+    call kernel_init
+    mov esp, 0xc009f000
+    jmp KERNEL_ENTRY_POINT
+
+kernel_init:
+    xor eax, eax
+    xor ebx, ebx ; ebx for address for program header table
+    xor ecx, ecx ; cx  for program header nums
+    xor edx, edx ; dx for size of program headers
+
+    mov dx,  [KERNEL_BIN_BASE_ADDR + 42]  ; e_phentsize, size of program header
+    mov ebx, [KERNEL_BIN_BASE_ADDR + 28]  ; e_phoff 
+    add ebx, KERNEL_BIN_BASE_ADDR
+    mov cx,  [KERNEL_BIN_BASE_ADDR + 44]  ; e_phnum
+  .each_segment:
+    cmp byte [ebx + 0], PT_NULL
+    je .PTNULL
+    push dword [ebx + 16] ; p_filesz -> size
+    mov eax, [ebx + 4]
+    add eax, KERNEL_BIN_BASE_ADDR
+    push eax   ; p_offset + kernel.bin_phiscal_address -> src
+    push dword [ebx + 8] ; p_vaddr -> dst
+    call mem_cpy
+    add esp, 12
+
+  .PTNULL:
+    add ebx, edx
+    loop .each_segment
+    ret
+
+; copy byte by byte
+; dst, src, size 3 arguments in stack
+mem_cpy:
+    cld
+    push ebp
+    mov  ebp, esp
+    push ecx            ; rep will use ecx, so need to back up
+
+    mov edi, [ebp + 8]  ; dst
+    mov esi, [ebp + 12] ; src
+    mov ecx, [ebp + 16] ; size
+    rep movsb
+
+    pop ecx
+    pop ebp
+    ret
+
 
 ; create pagetable
 setup_page:
     mov ecx, 4096
     mov esi, 0
-.clear_page_dir:
+  .clear_page_dir:
     mov byte [PAGE_DIR_TABLE_POS + esi], 0
     inc esi
     loop .clear_page_dir
 
-.create_pde:
+  .create_pde:
     mov eax, PAGE_DIR_TABLE_POS
     add eax, 0x1000
     mov ebx, eax
@@ -180,7 +233,7 @@ setup_page:
     mov ecx, 256    ; 256 * 4kb = 1024 kb = 1mb
     mov esi, 0
     mov edx, PG_US_S | PG_RW_W | PG_P
-.create_pte:
+  .create_pte:
     mov [ebx+esi*4], edx
     add edx, 4096
     inc esi
@@ -193,9 +246,61 @@ setup_page:
     mov ebx, PAGE_DIR_TABLE_POS
     mov ecx, 254
     mov esi, 769
-.create_kernel_pde:
+  .create_kernel_pde:
     mov [ebx+esi*4], eax
     inc esi
     add eax, 0x1000
     loop .create_kernel_pde
     ret
+
+rd_disk_m_32:	   
+    mov esi, eax
+    mov di, cx
+    ; setting the disk to read
+    mov dx, 0x1f2
+    mov al, cl
+    out dx, al
+    
+    mov eax, esi
+    mov cl, 8
+    ; LBA28 3*8 + 4 + 4(11xx)
+    ; LBA address 7 ~ 0 in 0x01f3
+    mov dx, 0x1f3
+    out dx, al                          
+    ; LBA address 15 ~ 8 in 0x01f4
+    shr eax, cl
+    mov dx, 0x1f4
+    out dx, al
+    ; LBA address 23 ~16 in 0x01f5
+    shr eax, cl
+    mov dx, 0x1f5
+    out dx, al
+    ; LBA decice 1110xxxx in 0x01f6
+    shr eax, cl
+    and al, 0x0f
+    or  al, 0xe0
+    mov dx, 0x1f6
+    ; command in 0x01f7
+    out dx, al
+    mov dx,0x1f7
+    mov al,0x20                        
+    out dx,al
+    ; checking disk status
+    .not_ready:		   
+      nop
+      in  al, dx
+      and al, 0x88
+      cmp al, 0x08
+      jnz .not_ready
+      ; read data
+      mov ax, di	  
+      mov dx, 256   
+      mul dx
+      mov cx, ax 
+      mov dx, 0x1f0
+    .go_on_read:
+      in ax, dx
+      mov [ebx], ax
+      add ebx, 2
+      loop .go_on_read
+      ret

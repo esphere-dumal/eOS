@@ -58,7 +58,7 @@ rd_disk_m_16:
     ; LBA decice 1110xxxx in 0x01f6
     shr eax, cl
     and al, 0x0f
-    or al, 0xe0
+    or  al, 0xe0
     mov dx, 0x01f6
     out dx, al
     ; command in 0x01f7
