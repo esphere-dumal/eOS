@@ -26,7 +26,7 @@ SECTION MBR vstart=0x7c00
     mov byte [gs:0x09], 0xA4
 ;---------------------------------------------------
     mov eax, LOADER_START_SECTOR
-    mov bx, LOADER_BASE_ADDR
+    mov bx,  LOADER_BASE_ADDR
     mov cx, 4
     call rd_disk_m_16
 

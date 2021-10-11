@@ -1,6 +1,5 @@
 %include "boot.inc"
 section loader vstart=LOADER_BASE_ADDR
-LOADER_STACK_TOP equ LOADER_BASE_ADDR
 
 ; gdt high part and low part, each is 4 byte
 GDT_BASE: dd 0x00000000
@@ -43,18 +42,16 @@ loader_start:
     mov eax, 0x0000e820
     mov ecx, 20
     int 0x15
-
     jc .e820_failed_so_try_e801
-
     add di, cx
     inc word [ards_nr]
     cmp ebx, 0
     jnz .e820_mem_get_loop
 
+
     mov cx, [ards_nr]
     mov ebx, ards_buf
     xor edx, edx
-
 ; bubble sort to find the highest mem
 .find_max_mem_area:
     mov eax, [ebx]
@@ -141,7 +138,7 @@ p_mode_start:
 
     call setup_page
     sgdt [gdt_ptr]
-    mov ebx, [gdt_p0tr + 2]
+    mov ebx, [gdt_ptr + 2]
     or  dword [ebx + 0x18 + 4], 0xc0000000
     add dword [gdt_ptr + 2], 0xc0000000
     add esp, 0xc0000000
@@ -154,7 +151,7 @@ p_mode_start:
 
     lgdt [gdt_ptr]
 
-    move byte [gs:160], "V"
+    mov byte [gs:160], "V"
 
     jmp $
 
