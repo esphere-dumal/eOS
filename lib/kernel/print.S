@@ -5,6 +5,28 @@ SELECTOR_VIDEO equ (0x0003 << 3) + T1_GDT + RPL0
 [bits 32]
 section .text
 global put_char
+global put_str
+
+put_str:
+    push ebx
+    push ecx
+    xor ecx, ecx
+    mov ebx, [esp + 12] ; the str to be printed
+  .goon:
+    mov cl, [ebx]
+    cmp cl, 0
+    jz  .str_over
+    push ecx
+    call put_char
+    add esp, 4
+    inc ebx
+    jmp .goon 
+  .str_over:
+    pop ecx
+    pop ebx
+    ret
+
+
 put_char:
     pushad
     mov ax, SELECTOR_VIDEO
@@ -35,7 +57,7 @@ put_char:
     jz .is_backspace
     jmp .put_other
 
-.is_backspace:
+  .is_backspace:
     dec bx
     shl bx, 1
     mov byte [gs:bx], 0x20
@@ -44,7 +66,7 @@ put_char:
     shr bx, 1
     jmp .set_cursor
 
-.put_other:
+  .put_other:
     shl bx, 1
     mov [gs:bx], cl
     inc bx
@@ -54,23 +76,23 @@ put_char:
     cmp bx, 2000
     jl .set_cursor
 
-.is_line_feed:
-.is_carriage_return:
+  .is_line_feed:
+  .is_carriage_return:
     xor dx, dx
     mov ax, bx
     mov si, 80
     div si
     sub bx, dx
 
-; CR return
-.is_carriage_return_end: 
+  ; CR return
+  .is_carriage_return_end: 
     add bx, 80
     cmp bx, 2000
-; LF return, cursor + 80
-.is_line_feed_end:
+  ; LF return, cursor + 80
+  .is_line_feed_end:
     jl .set_cursor
 
-.roll_screen:
+  .roll_screen:
     cld
     mov ecx, 960 ; 1920 * 2 / 4 = 960
 
@@ -81,13 +103,13 @@ put_char:
     mov ebx, 3840
     mov ecx, 80
 
-.cls:
+  .cls:
     mov word [gs:ebx], 0x0720
     add ebx, 2
     loop .cls
     mov bx, 1920
 
-.set_cursor:
+  .set_cursor:
     mov dx, 0x03d4
     mov al, 0x0e
     out dx, al
@@ -101,7 +123,7 @@ put_char:
     mov al, bl
     out dx, al
     
-.put_char_done:
+  .put_char_done:
     popad
     ret
     

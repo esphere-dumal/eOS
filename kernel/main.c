@@ -11,6 +11,7 @@ int main(void) {
     put_char('3');
     put_char('\b');
     put_char('2');
+    put_str("\nI am kernel!\n");
     while(1);
     return 0;
 }
