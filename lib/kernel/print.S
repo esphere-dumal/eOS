@@ -1,11 +1,71 @@
 T1_GDT equ 0
-RPL0 equ 0
+RPL0   equ 0
 SELECTOR_VIDEO equ (0x0003 << 3) + T1_GDT + RPL0
 
 [bits 32]
 section .text
+; buffer for int 
+put_int_buffer dq 0
+
 global put_char
 global put_str
+global put_int
+
+put_int:
+    pushad
+    mov ebp, eax
+    mov eax, [esp + 36] ; 4 + 8*4
+    mov edx, eax
+    mov edi, 7
+    mov ecx, 8
+    mov ebx, put_int_buffer
+
+  .int_16based_4bit:  
+    and edx, 0x0000000F
+    cmp edx, 9
+    jg .is_A2F
+    add edx, '0'
+    jmp .store
+
+  .is_A2F:
+    sub edx, 10
+    add edx, 'A'
+
+  .store:
+    mov [put_int_buffer + edi], dl
+    dec edi
+    shr eax, 4
+    mov edx, eax
+    loop .int_16based_4bit
+
+  .ready_to_print:
+    inc edi
+
+  .skip_prefix_0:
+    cmp edi, 8
+    je .full0
+
+  .go_on_skip:
+    mov cl, [put_int_buffer + edi]
+    inc edi
+    cmp cl, '0'
+    je .skip_prefix_0
+    dec edi
+    jmp .put_each_num
+
+  .full0:
+    mov cl, '0'
+
+  .put_each_num:
+    push ecx
+    call put_char
+    add esp, 4
+    inc edi
+    mov cl, [put_int_buffer + edi]
+    cmp edi, 8
+    jl .put_each_num
+    popad
+    ret
 
 put_str:
     push ebx
