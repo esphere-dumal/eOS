@@ -35,7 +35,6 @@ put_char:
     jz .is_backspace
     jmp .put_other
 
-
 .is_backspace:
     dec bx
     shl bx, 1
@@ -48,6 +47,9 @@ put_char:
 .put_other:
     shl bx, 1
     mov [gs:bx], cl
+    inc bx
+    mov byte [gs:bx], 0x07
+    shr bx, 1
     inc bx
     cmp bx, 2000
     jl .set_cursor
