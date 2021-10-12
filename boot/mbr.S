@@ -1,5 +1,5 @@
-%include "boot.inc"
-SECTION MBR vstart=0x7c00
+%include "boot.inc" 
+SECTION MBR vstart = 0x7c00
     mov ax, cs
     mov ds, ax
     mov es, ax
