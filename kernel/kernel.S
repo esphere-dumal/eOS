@@ -12,7 +12,8 @@ intr_entry_table:
 
 %macro VECTOR 2
 section .text
-intr%lentry:
+intr%1entry:
+
     %2
     push inir_str
     call put_str
@@ -26,7 +27,7 @@ intr%lentry:
     iret
 
 section .data
-    dd intr%lentry
+    dd intr%1entry
 
 %endmacro
 
