@@ -8,3 +8,5 @@ now finished:
     - turn paging
     - load and initialize kernel
 - a simple kernel
+    - with put_something() function for char\string\int
+    - simple interupt handle function
