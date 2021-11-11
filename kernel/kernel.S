@@ -1,13 +1,11 @@
 [bits 32]
-%define ERROR_CODE nop
-%define ZERO push 0
+%define ERROR_CODE nop ; if error_code is pushed, do nothing
+%define ZERO push 0    ; if there is no error_code, put a 0 to take place of error_code for a normal format
 
-extern put_str
+extern idt_table
 
 section .data
-inir_str db "interrupt occur!", 0xa, 0
 global intr_entry_table
-
 intr_entry_table:
 
 %macro VECTOR 2
@@ -15,21 +13,37 @@ section .text
 intr%1entry:
 
     %2
-    push inir_str
-    call put_str
-    add esp, 4
+    push ds
+    push es
+    push fs
+    push gs
+    pushad
 
-    mov al, 0x20
-    out 0xa0, al
-    out 0x20, al
+    mov al, 0x20 ; EOI end intertupt command 
+    out 0xa0, al ; send to slave
+    out 0x20, al ; send to master
 
-    add esp, 4
-    iret
+    push %1
+    call [idt_table + %1*4]
+    jmp intr_exit
 
 section .data
     dd intr%1entry
 
 %endmacro
+
+section .text
+global intr_exit
+intr_exit:
+    add esp, 4
+    popad
+    pop gs
+    pop fs
+    pop es
+    pop ds 
+    add esp, 4
+
+    iretd
 
 VECTOR 0x00, ZERO
 VECTOR 0x01, ZERO
