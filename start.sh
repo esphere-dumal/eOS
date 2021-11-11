@@ -6,6 +6,7 @@ dd if=./bin/loader.bin of=./bochs/hd60M.img bs=512 count=4 seek=2 conv=notrunc
 mkdir ./bin/obj
 nasm -f elf -o ./bin/obj/print.o  ./lib/kernel/print.S
 nasm -f elf -o ./bin/obj/kernel.o ./kernel/kernel.S
+gcc -m32 -I ./lib.kernel -c -o ./bin/obj/timer.o ./device/timer.c
 gcc -m32 -I ./lib/kernel/ -I ./lib/ -c -fno-builtin -o ./bin/obj/main.o ./kernel/main.c
 gcc -m32 -I ./lib/kernel -I ./lib -I ./kernel -c -fno-builtin -fno-stack-protector -o ./bin/obj/interrupt.o ./kernel/interrupt.c
 gcc -m32 -I ./lib/kernel -I ./lib -I ./kernel -c -fno-builtin -fno-stack-protector -o ./bin/obj/init.o ./kernel/init.c
