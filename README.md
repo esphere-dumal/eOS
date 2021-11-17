@@ -1,5 +1,5 @@
 # Learning OS
-Creating a small OS one by one
+Creating a small OS step by step
 
 now finished:
 - MBR
@@ -10,3 +10,4 @@ now finished:
 - a simple kernel
     - with put_something() function for char\string\int
     - simple interupt handle function
+- using makefile
