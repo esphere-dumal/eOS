@@ -1,6 +1,10 @@
 # Learning OS
 Creating a small OS step by step
 
+running:
+- make all
+- ./start
+
 now finished:
 - MBR
 - boot loader
