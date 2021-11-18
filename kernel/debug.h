@@ -5,13 +5,12 @@ void panic_spin(char *filename, int line, const char *func, const char *conditio
 
 #define PANIC(...) panic_spin(__FILE__, __LINE__, __func__, __VA_ARGS__);
 
-#ifndef NDEBUG
-#define ASSERT(CONDITION) ((void)0)
-
+#ifdef NDEBUG
+    #define ASSERT(CONDITION) ((void)0)
 #else 
 #define ASSERT(CONDITION) \
     if (CONDITION) {}     \
-    else {
+    else {                \
         PANIC(#CONDITION);\
     }
 
