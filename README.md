@@ -4,6 +4,7 @@ Creating a small OS step by step
 running:
 - make all
 - ./start
+- in the bochs, enter "c" to run 
 
 now finished:
 - MBR
