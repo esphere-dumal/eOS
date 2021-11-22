@@ -4,7 +4,7 @@
 #include "bitmap.h"
 
 struct virtual_addr {
-    struct bitmap vaaddr_bitmap;
+    struct bitmap vaddr_bitmap;
     uint32_t vaddr_start;
 };
 
