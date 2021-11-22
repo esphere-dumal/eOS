@@ -1,14 +1,16 @@
 #include "print.h"
 #include "init.h"
-#include "debug.h"
+#include "memory.h"
 
 int main(void) {
     put_str("I am the kernel!\n");
     init_all();
-//     asm volatile("sti");
-    put_str("before assert\n");
-    ASSERT(1==114514);
-    put_str("after assert\n");
+    
+    void* vaddr = get_kernel_pages(3);
+    put_str("\n get_kernel_pages start vaddr is: ");
+    put_int((uint32_t)vaddr);
+    put_char('\n');
+
     while(1);
     return 0;
 }
