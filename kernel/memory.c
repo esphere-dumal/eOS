@@ -45,6 +45,7 @@ static void mem_pool_init(uint32_t all_mem) {
     kernel_pool.pool_size = kernel_free_pages * PG_SIZE;
     kernel_pool.pool_bitmap.btmp_bytes_len = kbm_length;
     kernel_pool.pool_bitmap.bits = (void*)MEM_BITMAP_BASE;
+
     user_pool.phy_addr_start  = up_start;
     user_pool.pool_size = user_free_pages *PG_SIZE;
     user_pool.pool_bitmap.btmp_bytes_len = ubm_length;
@@ -92,13 +93,13 @@ uint32_t* pde_ptr(uint32_t vaddr) {
 
 // alloc some virtual address
 static void* va_alloc(enum pool_flag pf, uint32_t pg_cnt) {
-    int vaddr_start = 0, bit_idx_start = -1;
+    int vaddr_start, bit_idx_start;
     uint32_t cnt = 0;
 
     if(pf == PF_KERNEL) {
         bit_idx_start = bitmap_alloc(&kernel_vaddr.vaddr_bitmap, pg_cnt);
         if(bit_idx_start == -1) return NULL;
-        while (cnt <= pg_cnt) {
+        while (cnt < pg_cnt) {
             bitmap_set(&kernel_vaddr.vaddr_bitmap, bit_idx_start + cnt, 1);
             cnt++;
         }
@@ -141,13 +142,10 @@ static void page_table_set(void* va, void* pa) {
 
 void* malloc_page(enum pool_flag pf, uint32_t pg_cnt) {
     ASSERT(pg_cnt > 0 && pg_cnt < 3840);
-
     void* vaddr_start = va_alloc(pf, pg_cnt);
     if(vaddr_start == NULL) return NULL;
     uint32_t vaddr = (uint32_t)vaddr_start;
-
-
-    struct pool* m_pool = pf & PF_KERNEL ? &kernel_pool : & user_pool;
+    struct pool* m_pool = pf & PF_KERNEL ? &kernel_pool : &user_pool;
     for(uint32_t cnt=0; cnt < pg_cnt; cnt++) {
         void* paddr = pa_alloc(m_pool);
         if(paddr == NULL) {
@@ -157,7 +155,7 @@ void* malloc_page(enum pool_flag pf, uint32_t pg_cnt) {
         page_table_set((void*)vaddr, paddr);
         vaddr += PG_SIZE;
     }
-    return vaddr;
+    return vaddr_start;
 }
 
 void* get_kernel_pages(uint32_t pg_cnt) {

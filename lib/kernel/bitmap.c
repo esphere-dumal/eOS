@@ -40,10 +40,11 @@ int bitmap_alloc(struct bitmap* btmp, uint32_t cnt) {
 
     // find the first free bit
     uint32_t bit_idx = 0;
-    while(btmp->bits[bit_idx] & (uint8_t)(BITMAP_MASK << bit_idx))
+    while(btmp->bits[byte_index] & (uint8_t)(BITMAP_MASK << bit_idx))
         bit_idx++;
-    uint32_t bit_start_idx = byte_index *8 + bit_idx;
+    uint32_t bit_start_idx = byte_index*8 + bit_idx;
 
+    if(cnt == 1) return bit_start_idx;
     // check the rest bit for a series of free bits
     uint32_t next_bit = bit_start_idx + 1;
     uint32_t count = 1;
