@@ -16,5 +16,5 @@ typedef int bool;
 #define true  1;
 #define false 0;
 
-#define 0 NULL
+#define NULL 0
 #endif

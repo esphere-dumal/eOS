@@ -6,7 +6,7 @@
 #include "debug.h"
 
 void bitmap_init(struct bitmap* btmp) {
-    memset(bmtp->bits, 0, btmp->btmp_bytes_len);
+    memset(btmp->bits, 0, btmp->btmp_bytes_len);
 }
 
 bool bitmap_get(struct bitmap* btmp, uint32_t bit_idx) {
@@ -49,7 +49,7 @@ int bitmap_alloc(struct bitmap* btmp, uint32_t cnt) {
     uint32_t count = 1;
     for(uint32_t i=bit_start_idx; i<(btmp->btmp_bytes_len*8); i++) {
         if(!bitmap_get(btmp, next_bit)) count++;
-        else count = 0
+        else count = 0;
         if(count == cnt) return next_bit - cnt + 1;
         next_bit++;
     }
