@@ -16,3 +16,5 @@ now finished:
     - with put_something() function for char\string\int
     - simple interupt handle function
 - using makefile
+- memory
+    - able to alloc memory by pages
