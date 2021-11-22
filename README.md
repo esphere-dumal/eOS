@@ -18,3 +18,5 @@ now finished:
 - using makefile
 - memory
     - able to alloc memory by pages
+- process
+    - thread
