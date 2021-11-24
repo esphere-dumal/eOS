@@ -7,7 +7,7 @@ AS = nasm
 CC = gcc
 LD = ld 
 
-LIB = -I lib -I lib/kernel -I lib/uesr -I kernel/ -I device/
+LIB = -I lib -I lib/kernel -I lib/uesr -I kernel/ -I device/ -I thread/
 ASIB = -I boot/
 
 CFLAGS = -m32 $(LIB) -c -fno-builtin -fno-stack-protector
@@ -16,7 +16,7 @@ LDFLAGS = -m elf_i386 -Ttext $(ENTRY_POINT) -e main
 
 OBJS = $(BUILD_DIR)/main.o $(BUILD_DIR)/init.o $(BUILD_DIR)/interrupt.o \
        $(BUILD_DIR)/timer.o $(BUILD_DIR)/kernel.o $(BUILD_DIR)/print.o $(BUILD_DIR)/debug.o \
-	   $(BUILD_DIR)/string.o $(BUILD_DIR)/bitmap.o $(BUILD_DIR)/memory.o
+	   $(BUILD_DIR)/string.o $(BUILD_DIR)/bitmap.o $(BUILD_DIR)/memory.o $(BUILD_DIR)/thread.o
 
 ### C 
 
@@ -53,6 +53,10 @@ $(BUILD_DIR)/memory.o: kernel/memory.c kernel/memory.h lib/stdint.h lib/kernel/b
 	lib/kernel/io.h kernel/interrupt.h lib/string.h lib/stdint.h
 	$(CC) $(CFLAGS) $< -o $@
 
+$(BUILD_DIR)/thread.o: thread/thread.c thread/thread.h lib/stdint.h \
+        kernel/global.h lib/kernel/bitmap.h kernel/memory.h lib/string.h \
+        lib/stdint.h lib/kernel/print.h kernel/interrupt.h kernel/debug.h
+	$(CC) $(CFLAGS) $< -o $@
 ### ASM
 
 $(BUILD_DIR)/mbr.bin: boot/mbr.S
