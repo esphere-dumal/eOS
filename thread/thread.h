@@ -2,6 +2,7 @@
 #define __THREAD_THREAD_H
 
 #include "stdint.h"
+#include "list.h"
 
 typedef void thread_func(void*);
 
@@ -58,9 +59,18 @@ struct task_struct {
     uint8_t priority;
     char name[16];
     uint32_t stack_magic;
+
+    uint8_t ticks;
+    uint32_t elapsed_ticks;
+    struct list_elem general_tag;
+    struct list_elem all_list_tag;
+    uint32_t* pagedir;
 };
 
 void thread_create(struct task_struct* pthread, thread_func function, void* func_arg);
 void thread_init(struct task_struct* pthread, char* name, int priority);
 struct task_struct* thread_start(char* name, int priority, thread_func function, void* func_arg);
+struct task_struct* running_thread();
+void schedule();
+void threads_init();
 #endif

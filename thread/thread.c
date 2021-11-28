@@ -3,13 +3,25 @@
 #include "string.h"
 #include "global.h"
 #include "memory.h"
+#include "interrupt.h"
+#include "list.h"
+#include "debug.h"
 
 #define PG_SIZE 4096
 #define STACK_MAGIC 0x11451411
 
+extern switch_to(struct task_struct* cur, struct task_struct* next);
+
+struct task_struct* main_thread;
+struct list thread_ready_list;
+struct list thread_all_list;
+static struct list_elem* thread_tag;
+
 static void kernel_thread(thread_func* function, void* func_arg) {
+    intr_enable();
     function(func_arg);
 }
+
 
 /* create: init thread_stack
  * init  : init thread basical info
@@ -32,8 +44,12 @@ void thread_create(struct task_struct* pthread, thread_func function, void* func
 void thread_init(struct task_struct* pthread, char* name, int priority) {
     memset(pthread, 0, sizeof(*pthread));
     strcpy(pthread->name, name);
-    pthread->status = RUNNING;
+    if(pthread == main_thread) pthread->status = RUNNING;
+    else pthread->status = READY;
     pthread->priority = priority;
+    pthread->ticks = priority;
+    pthread->elapsed_ticks = 0;
+    pthread->pagedir = NULL;
     pthread->self_kstack = (uint32_t*) ((uint32_t)pthread + PG_SIZE);
     pthread->stack_magic = STACK_MAGIC;
 }
@@ -44,14 +60,61 @@ struct task_struct* thread_start(char* name, int priority, thread_func function,
     thread_init(thread, name, priority);
     thread_create(thread, function, func_arg);
 
-    asm volatile ( "movl %0, %%esp;  \
-                    pop %%ebp; \
-                    pop %%ebx; \
-                    pop %%edi; \
-                    pop %%esi; \
-                    ret; \
-                    " : : "g" (thread->self_kstack) : "memory" );
+    ASSERT(!elem_find(&thread_ready_list, &thread->general_tag));
+    ASSERT(!elem_find(&thread_all_list, &thread->general_tag));
+
+    list_append(&thread_ready_list, &thread->general_tag);
+    list_append(&thread_all_list, &thread->general_tag);
+
+    // asm volatile ( "movl %0, %%esp;  \
+    //                 pop %%ebp; \
+    //                 pop %%ebx; \
+    //                 pop %%edi; \
+    //                 pop %%esi; \
+    //                 ret; \
+    //                 " : : "g" (thread->self_kstack) : "memory" );
     
     return thread;
 }
 
+struct task_struct* running_thread() {
+    uint32_t esp;
+    asm("mov %%esp, %0" : "=g" (esp));
+    return (struct task_struct*)(esp & 0xfffff000);
+}
+
+static make_main_thread() {
+    main_thread = running_thread();
+    thread_init(main_thread, "main", 31);
+
+    ASSERT(!elem_find(&thread_all_list, &main_thread->general_tag));
+    list_append(&thread_all_list, &main_thread->general_tag);
+}
+
+void schedule() {
+    ASSERT(intr_get_status() == INTR_OFF);
+    struct task_struct* cur = running_thread(); 
+    if (cur->status == RUNNING) { 
+        ASSERT(!elem_find(&thread_ready_list, &cur->general_tag));
+        list_append(&thread_ready_list, &cur->general_tag);
+        cur->ticks = cur->priority;
+        cur->status = READY;
+    }
+    else { }
+
+    ASSERT(!list_empty(&thread_ready_list));
+    thread_tag = NULL;
+    thread_tag = list_pop(&thread_ready_list);
+    struct task_struct* next = elem2entry(struct task_struct, general_tag, thread_tag);
+    next->status = RUNNING;
+    switch_to(cur, next);
+}
+
+void threads_init() {
+    put_str("threads_init start\n");
+    list_init(&thread_all_list);
+    list_init(&thread_ready_list);
+
+    make_main_thread();
+    put_str("threads_init done\n");
+}
