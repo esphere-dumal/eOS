@@ -45,7 +45,8 @@ static void general_intr_handler(uint8_t vec_nr) {
     if (vec_nr == 14) {
         int page_fault_vaddr = 0; 
         asm ("movl %%cr2, %0" : "=r" (page_fault_vaddr));
-        put_str("\npage fault addr is ");put_int(page_fault_vaddr); 
+        put_str("\npage fault addr is ");
+        put_int(page_fault_vaddr); 
     }
     put_str("\n!!!!!!!      excetion message end    !!!!!!!!\n");
 

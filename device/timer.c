@@ -29,11 +29,9 @@ static void frequency_set(uint8_t counter_port, \
 
 static void intr_timer_handler() {
    struct task_struct* cur_thread = running_thread();
-   put_int(cur_thread->stack_magic);
    ASSERT(cur_thread->stack_magic == 0x11451411);
    cur_thread->elapsed_ticks++;
    ticks++;
-
    if(cur_thread->ticks == 0) {
       schedule();
    }

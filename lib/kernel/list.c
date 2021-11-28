@@ -4,8 +4,8 @@
 
 void list_init(struct list* list) {
     list->head.prev = NULL;
-    list->head.next = NULL;
-    list->tail.prev = NULL;
+    list->head.next = &list->tail;
+    list->tail.prev = &list->head;
     list->tail.next = NULL;
 }
 
@@ -45,7 +45,7 @@ struct list_elem* list_pop(struct list* plist) {
 
 bool elem_find(struct list* plist, struct list_elem* obj_elem) {
     struct list_elem* elem = plist->head.next;
-    while(elem!= &plist->tail) {
+    while(elem != &plist->tail) {
         if(elem == obj_elem) return true;
         elem = elem->next;
     }

@@ -10,8 +10,8 @@ int main(void) {
     put_str("I am the kernel!\n");
     init_all();
 
-    // thread_start("k_thread_one", 37, k_thread_one, "argA ");
-    // thread_start("k_thread_two", 7,  k_thread_two, "argB ");
+    thread_start("k_thread_one", 37, k_thread_one, "argA ");
+    thread_start("k_thread_two", 7,  k_thread_two, "argB ");
 
     intr_enable();
     while(1) put_str("main  ");

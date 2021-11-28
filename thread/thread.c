@@ -56,15 +56,18 @@ void thread_init(struct task_struct* pthread, char* name, int priority) {
 
 struct task_struct* thread_start(char* name, int priority, thread_func function, void* func_arg) {
     struct task_struct* thread = get_kernel_pages(1);
+    put_str("thread address: ");
+    put_int(thread);
+    put_str("\n");
 
     thread_init(thread, name, priority);
     thread_create(thread, function, func_arg);
 
     ASSERT(!elem_find(&thread_ready_list, &thread->general_tag));
-    ASSERT(!elem_find(&thread_all_list, &thread->general_tag));
+    ASSERT(!elem_find(&thread_all_list, &thread->all_list_tag));
 
     list_append(&thread_ready_list, &thread->general_tag);
-    list_append(&thread_all_list, &thread->general_tag);
+    list_append(&thread_all_list, &thread->all_list_tag);
 
     // asm volatile ( "movl %0, %%esp;  \
     //                 pop %%ebp; \
@@ -87,8 +90,8 @@ static make_main_thread() {
     main_thread = running_thread();
     thread_init(main_thread, "main", 31);
 
-    ASSERT(!elem_find(&thread_all_list, &main_thread->general_tag));
-    list_append(&thread_all_list, &main_thread->general_tag);
+    ASSERT(!elem_find(&thread_all_list, &main_thread->all_list_tag));
+    list_append(&thread_all_list, &main_thread->all_list_tag);
 }
 
 void schedule() {
@@ -97,6 +100,7 @@ void schedule() {
     if (cur->status == RUNNING) { 
         ASSERT(!elem_find(&thread_ready_list, &cur->general_tag));
         list_append(&thread_ready_list, &cur->general_tag);
+
         cur->ticks = cur->priority;
         cur->status = READY;
     }
@@ -114,7 +118,6 @@ void threads_init() {
     put_str("threads_init start\n");
     list_init(&thread_all_list);
     list_init(&thread_ready_list);
-
     make_main_thread();
     put_str("threads_init done\n");
 }
