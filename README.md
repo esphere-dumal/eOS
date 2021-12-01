@@ -20,3 +20,4 @@ now finished:
     - able to alloc memory by pages
 - process
     - thread
+    - sync
