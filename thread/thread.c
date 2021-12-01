@@ -121,3 +121,26 @@ void threads_init() {
     make_main_thread();
     put_str("threads_init done\n");
 }
+
+
+void thread_block(enum task_status_ stat) {
+    ASSERT ( (stat == BLOCKED) || (stat == WAITING) || (stat == HANGING) );
+    enum intr_status old_status = intr_disable();
+    struct task_struct* cur_thread = running_thread();
+    cur_thread-> status = stat;
+    schedule();
+    intr_set_status(old_status);
+}
+
+void thread_unblock(struct task_struct* pthread) {
+    enum intr_status old_status = intr_disable();
+    ASSERT ( (pthread->status == BLOCKED) || (pthread->status == WAITING) || (pthread->status == HANGING) );
+    if(pthread->status != READY) {
+        if(elem_find(&thread_ready_list, &pthread->general_tag)) 
+            PANIC("Thread_unblock: blocked thread in ready list");
+
+        list_push(&thread_ready_list, &pthread->general_tag);
+        pthread->status = READY;
+    }
+    intr_set_status(old_status);
+}
