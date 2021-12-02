@@ -10,7 +10,6 @@ struct semaphore {
     struct list waiters;
 };
 
-
 struct lock {
     struct task_struct* holder;
     struct semaphore semaphore;

@@ -1,6 +1,7 @@
 #include "list.h"
 #include "interrupt.h"
 #include "stdint.h"
+#include "print.h"
 
 void list_init(struct list* list) {
     list->head.prev = NULL;

@@ -56,8 +56,6 @@ void thread_init(struct task_struct* pthread, char* name, int priority) {
 
 struct task_struct* thread_start(char* name, int priority, thread_func function, void* func_arg) {
     struct task_struct* thread = get_kernel_pages(1);
-    put_str("thread address: ");
-    put_int(thread);
     put_str("\n");
 
     thread_init(thread, name, priority);

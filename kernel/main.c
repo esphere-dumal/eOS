@@ -14,7 +14,7 @@ int main(void) {
     thread_start("k_thread_two", 7,  k_thread_two, "argB ");
 
     intr_enable();
-    while(1) put_str("main  ");
+    while(1) console_put_str("main ");
 
     while(1);
     return 0;
