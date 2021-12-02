@@ -123,7 +123,7 @@ void threads_init() {
 }
 
 
-void thread_block(enum task_status_ stat) {
+void thread_block(enum task_status stat) {
     ASSERT ( (stat == BLOCKED) || (stat == WAITING) || (stat == HANGING) );
     enum intr_status old_status = intr_disable();
     struct task_struct* cur_thread = running_thread();

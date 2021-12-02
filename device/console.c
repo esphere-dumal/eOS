@@ -4,18 +4,18 @@
 #include "sync.h"
 #include "thread.h"
 
-static struct lock consol_lock;
+static struct lock console_lock;
 
 void console_init() {
-    lock_init(&consol_lock);
+    lock_init(&console_lock);
 }
 
 void console_acquire() {
-    lock_acquire(&consol_lock);
+    lock_acquire(&console_lock);
 }
 
 void console_release() {
-    lock_release(&consol_lock);
+    lock_release(&console_lock);
 }
 
 void console_put_str(char* str) {

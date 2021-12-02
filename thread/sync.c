@@ -1,10 +1,11 @@
 #include "stdint.h"
 #include "sync.h"
 #include "interrupt.h"
+#include "debug.h"
 
 void sema_init(struct semaphore* psema, uint8_t value) {
     psema->value = value;
-    list_init(psema->waiters);
+    list_init(&psema->waiters);
 }
 
 void sema_down(struct semaphore* psema) {
@@ -13,7 +14,7 @@ void sema_down(struct semaphore* psema) {
         if(elem_find(&psema->waiters, &running_thread()->general_tag)) 
             PANIC("sema_down: thread blocked has been in the waiters list");
         list_append(&psema->waiters, &running_thread()->general_tag);
-        thread_blocked();
+        thread_block(BLOCKED);
     }
     psema->value--;
     ASSERT(psema->value == 0);

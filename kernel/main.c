@@ -1,5 +1,5 @@
 #include "print.h"
-#include "init.h"
+#include "console.h"
 #include "thread.h"
 #include "interrupt.h"
 
@@ -23,13 +23,13 @@ int main(void) {
 void k_thread_one(void* arg) {
     char *para = arg;
     while(1) {
-        put_str(para);
+        console_put_str(para);
     }
 }
 
 void k_thread_two(void* arg) {
     char *para = arg;
     while(1) {
-        put_str(para);
+        console_put_str(para);
     }
 }
